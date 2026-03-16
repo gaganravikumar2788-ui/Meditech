@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wellness Assistant</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; }
+
+    .chat-scroll::-webkit-scrollbar { width: 6px; }
+    .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg-anim { animation: fadeUp 0.3s ease-out; }
+
+    @keyframes pulse-dot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .dot1 { animation: pulse-dot 1.2s infinite 0s; }
+    .dot2 { animation: pulse-dot 1.2s infinite 0.2s; }
+    .dot3 { animation: pulse-dot 1.2s infinite 0.4s; }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .user-msg { animation: slideInRight 0.4s ease-out; }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .bot-msg { animation: slideInLeft 0.4s ease-out; }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.1); }
+      50% { transform: scale(1); }
+    }
+    .bot-icon { animation: heartbeat 2s ease-in-out infinite; }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(34, 211, 167, 0.3); }
+      50% { box-shadow: 0 0 16px rgba(34, 211, 167, 0.6); }
+    }
+    .glow-effect { animation: glow 2s ease-in-out infinite; }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    .shimmer-effect {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes bounce-subtle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    .bounce-msg { animation: bounce-subtle 0.6s ease-out; }
+
+    .suggestion-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .suggestion-chip { transition: all 0.2s ease; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full flex flex-col" style="background: #0f1923;">
+   <!-- Header -->
+   <header class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: rgba(255,255,255,0.08); background: rgba(15,25,35,0.95);">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #22d3a7, #0ea5e9);">
+     <i data-lucide="heart-pulse" style="width:20px;height:20px;color:#fff;"></i>
+    </div>
+    <div>
+     <h1 id="header-title" class="text-base font-bold" style="color: #e8faf5; font-family: 'Playfair Display', serif;">Medicom</h1>
+     <p class="text-xs" style="color: #22d3a7;">General wellness suggestions only</p>
+    </div>
+   </header><!-- Disclaimer -->
+   <div class="px-4 py-2" style="background: rgba(234,179,8,0.1); border-bottom: 1px solid rgba(234,179,8,0.15);">
+    <p class="text-xs text-center" style="color: #eab308;"><strong>⚠️ Disclaimer:</strong> This is NOT medical advice. Always consult a real doctor for diagnosis and prescriptions.</p>
+   </div><!-- Chat Area -->
+   <main id="chat-area" class="flex-1 overflow-y-auto chat-scroll px-4 py-4 space-y-3" style="min-height: 0;">
+   </main><!-- Suggestions -->
+   <div id="suggestions" class="px-4 pb-2 flex flex-wrap gap-2">
+    <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border" style="color:#22d3a7; border-color: rgba(34,211,167,0.3); background: rgba(34,211,167,0.08);" onclick="sendMessage('I have a headache')">🤕 Headache</button> <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border" style="color:#22d3a7; border-color: rgba(34,211,167,0.3); background: rgba(34,211,167,0.08);" onclick="sendMessage('I have a cold')">🤧 Cold</button> <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border" style="color:#22d3a7; border-color: rgba(34,211,167,0.3); background: rgba(34,211,167,0.08);" onclick="sendMessage('I have a sore throat')">😷 Sore Throat</button> <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border" style="color:#22d3a7; border-color: rgba(34,211,167,0.3); background: rgba(34,211,167,0.08);" onclick="sendMessage('I have stomach ache')">🤢 Stomach Ache</button> <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border" style="color:#22d3a7; border-color: rgba(34,211,167,0.3); background: rgba(34,211,167,0.08);" onclick="sendMessage('I have body pain')">💪 Body Pain</button>
+   </div><!-- Input -->
+   <footer class="px-4 pb-4 pt-2">
+    <form id="chat-form" class="flex gap-2">
+     <label for="user-input" class="sr-only">Describe your symptoms</label> <input id="user-input" type="text" placeholder="Describe how you're feeling..." autocomplete="off" class="flex-1 rounded-xl px-4 py-3 text-sm outline-none" style="background: rgba(255,255,255,0.07); color: #e8faf5; border: 1px solid rgba(255,255,255,0.1);"> <button type="submit" id="send-btn" class="rounded-xl px-4 flex items-center justify-center" style="background: linear-gradient(135deg, #22d3a7, #0ea5e9);" aria-label="Send message"> <i data-lucide="send" style="width:18px;height:18px;color:#fff;"></i> </button>
+    </form>
+   </footer>
+  </div>
+  <script>
+    // --- Wellness Knowledge Base ---
+    const remedies = {
+      headache: {
+        keywords: ['headache', 'head ache', 'head pain', 'migraine', 'head hurts', 'head is pounding'],
+        icon: '🤕',
+        title: 'Headache Relief Suggestions',
+        tips: [
+          '💊 <strong>OTC Pain Relief:</strong> Paracetamol (500mg) or Ibuprofen (200-400mg) with food.',
+          '💧 <strong>Stay Hydrated:</strong> Drink plenty of water — dehydration is a common cause.',
+          '😴 <strong>Rest:</strong> Lie down in a quiet, dark room for 20-30 minutes.',
+          '🧊 <strong>Cold Compress:</strong> Apply a cold pack to your forehead for 15 minutes.',
+          '☕ <strong>Caffeine:</strong> A small cup of coffee can help mild headaches.',
+        ],
+        warning: 'See a doctor if: headache is severe/sudden, accompanied by fever, stiff neck, confusion, or lasts more than 3 days.'
+      },
+      cold: {
+        keywords: ['cold', 'runny nose', 'sneezing', 'stuffy nose', 'nasal congestion', 'blocked nose', 'flu', 'common cold'],
+        icon: '🤧',
+        title: 'Cold & Flu Suggestions',
+        tips: [
+          '💊 <strong>Decongestant:</strong> Pseudoephedrine or Phenylephrine tablets for stuffy nose.',
+          '🍯 <strong>Honey & Lemon:</strong> Warm water with honey and lemon soothes symptoms.',
+          '🛁 <strong>Steam Inhalation:</strong> Breathe steam from hot water for 10 minutes.',
+          '💧 <strong>Fluids:</strong> Drink warm soups, herbal teas, and lots of water.',
+          '😴 <strong>Rest Well:</strong> Sleep is your body\'s best medicine.',
+          '💊 <strong>Antihistamine:</strong> Cetirizine (10mg) if sneezing/runny nose is severe.',
+        ],
+        warning: 'See a doctor if: fever above 103°F (39.4°C), symptoms last more than 10 days, or difficulty breathing.'
+      },
+      sore_throat: {
+        keywords: ['sore throat', 'throat pain', 'throat hurts', 'scratchy throat', 'painful swallowing', 'swollen throat'],
+        icon: '😷',
+        title: 'Sore Throat Suggestions',
+        tips: [
+          '🧂 <strong>Salt Water Gargle:</strong> Mix ½ tsp salt in warm water, gargle 3-4 times daily.',
+          '🍯 <strong>Honey:</strong> 1-2 teaspoons of raw honey to coat and soothe the throat.',
+          '💊 <strong>Lozenges:</strong> Throat lozenges with menthol or benzocaine for relief.',
+          '💊 <strong>Pain Relief:</strong> Paracetamol or Ibuprofen for pain and inflammation.',
+          '🍵 <strong>Warm Drinks:</strong> Chamomile or ginger tea with honey.',
+        ],
+        warning: 'See a doctor if: difficulty breathing or swallowing, fever above 101°F, rash, or lasts more than a week.'
+      },
+      stomach: {
+        keywords: ['stomach', 'stomach ache', 'stomach pain', 'nausea', 'indigestion', 'bloating', 'gas', 'acidity', 'acid reflux', 'diarrhea', 'vomiting', 'tummy'],
+        icon: '🤢',
+        title: 'Stomach Issue Suggestions',
+        tips: [
+          '💊 <strong>Antacid:</strong> Over-the-counter antacids (like Tums or Eno) for acidity/heartburn.',
+          '🫚 <strong>Ginger:</strong> Ginger tea or chewing fresh ginger helps nausea.',
+          '🍌 <strong>BRAT Diet:</strong> Bananas, Rice, Applesauce, Toast — gentle on the stomach.',
+          '💧 <strong>Hydrate:</strong> Small sips of water or ORS if vomiting/diarrhea present.',
+          '🚫 <strong>Avoid:</strong> Spicy, oily, and dairy foods until you feel better.',
+          '💊 <strong>Loperamide:</strong> For diarrhea relief (adults only, short-term).',
+        ],
+        warning: 'See a doctor if: severe abdominal pain, blood in stool/vomit, high fever, or symptoms last more than 2 days.'
+      },
+      body_pain: {
+        keywords: ['body pain', 'muscle pain', 'body ache', 'joint pain', 'back pain', 'muscle ache', 'sore muscles', 'fatigue', 'leg pain', 'arm pain'],
+        icon: '💪',
+        title: 'Body & Muscle Pain Suggestions',
+        tips: [
+          '💊 <strong>Pain Relief:</strong> Ibuprofen (200-400mg) or Paracetamol (500mg).',
+          '🧴 <strong>Topical Relief:</strong> Apply pain relief gel (Diclofenac gel) to affected area.',
+          '♨️ <strong>Warm Compress:</strong> Apply a warm towel or heating pad for 15-20 minutes.',
+          '🧘 <strong>Gentle Stretching:</strong> Light stretches to relieve muscle tension.',
+          '😴 <strong>Rest:</strong> Avoid strenuous activity and get adequate sleep.',
+          '💧 <strong>Hydrate & Nutrition:</strong> Ensure proper water intake and balanced meals.',
+        ],
+        warning: 'See a doctor if: pain is severe or sudden, accompanied by swelling/redness, numbness, or lasts more than a week.'
+      },
+      cough: {
+        keywords: ['cough', 'coughing', 'dry cough', 'wet cough', 'chest congestion'],
+        icon: '😮‍💨',
+        title: 'Cough Relief Suggestions',
+        tips: [
+          '🍯 <strong>Honey:</strong> 1-2 teaspoons before bedtime (not for children under 1).',
+          '💊 <strong>Cough Syrup:</strong> Dextromethorphan for dry cough; Guaifenesin for wet cough.',
+          '🍵 <strong>Warm Fluids:</strong> Hot tea with honey and lemon.',
+          '💨 <strong>Humidifier:</strong> Use a humidifier to keep air moist.',
+          '🧂 <strong>Salt Gargle:</strong> Warm salt water gargle to soothe throat irritation.',
+        ],
+        warning: 'See a doctor if: cough lasts more than 3 weeks, coughing up blood, wheezing, or shortness of breath.'
+      },
+      fever: {
+        keywords: ['fever', 'temperature', 'high temperature', 'feverish', 'chills'],
+        icon: '🌡️',
+        title: 'Fever Management Suggestions',
+        tips: [
+          '💊 <strong>Paracetamol:</strong> 500mg every 4-6 hours (max 4g/day for adults).',
+          '💧 <strong>Fluids:</strong> Drink plenty of water, juice, and soups to prevent dehydration.',
+          '🧊 <strong>Cool Compress:</strong> Place a cool damp cloth on forehead.',
+          '👕 <strong>Light Clothing:</strong> Wear lightweight clothes and use thin bedding.',
+          '😴 <strong>Rest:</strong> Your body needs energy to fight the infection.',
+        ],
+        warning: 'See a doctor if: fever above 103°F (39.4°C), lasts more than 3 days, stiff neck, confusion, or in infants under 3 months.'
+      },
+      allergy: {
+        keywords: ['allergy', 'allergic', 'itching', 'rash', 'hives', 'skin rash', 'itchy skin', 'watery eyes', 'allergic reaction'],
+        icon: '🤧',
+        title: 'Allergy Relief Suggestions',
+        tips: [
+          '💊 <strong>Antihistamine:</strong> Cetirizine (10mg) or Loratadine (10mg) once daily.',
+          '🧴 <strong>Calamine Lotion:</strong> Apply to itchy skin for soothing relief.',
+          '🧊 <strong>Cold Compress:</strong> Apply to rash/hives to reduce swelling and itch.',
+          '🚫 <strong>Avoid Triggers:</strong> Identify and stay away from known allergens.',
+          '🚿 <strong>Cool Shower:</strong> Helps relieve generalized itching.',
+        ],
+        warning: 'Seek EMERGENCY care if: swelling of face/tongue/throat, difficulty breathing, dizziness — this could be anaphylaxis.'
+      },
+      insomnia: {
+        keywords: ['insomnia', 'cant sleep', "can't sleep", 'sleepless', 'trouble sleeping', 'sleep problem', 'not sleeping'],
+        icon: '😴',
+        title: 'Sleep Improvement Suggestions',
+        tips: [
+          '🌙 <strong>Sleep Hygiene:</strong> Go to bed and wake up at the same time daily.',
+          '📱 <strong>No Screens:</strong> Avoid phones/laptops 1 hour before bed.',
+          '🍵 <strong>Chamomile Tea:</strong> A warm cup before bedtime promotes relaxation.',
+          '🧘 <strong>Relaxation:</strong> Try deep breathing or meditation before sleep.',
+          '🌡️ <strong>Cool Room:</strong> Keep bedroom temperature between 60-67°F (15-19°C).',
+          '🚫 <strong>Avoid:</strong> Caffeine after 2pm and heavy meals before bedtime.',
+        ],
+        warning: 'See a doctor if: insomnia persists for more than 4 weeks, daytime drowsiness affecting daily life, or snoring/breathing stops during sleep.'
+      }
+    };
+
+    function findRemedy(text) {
+      const lower = text.toLowerCase();
+      for (const [key, data] of Object.entries(remedies)) {
+        for (const kw of data.keywords) {
+          if (lower.includes(kw)) return data;
+        }
+      }
+      return null;
+    }
+
+    // --- Chat Logic ---
+    const chatArea = document.getElementById('chat-area');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+
+    const defaultConfig = {
+      bot_name: 'Wellness Assistant',
+      welcome_message: "Hello! 👋 I'm your Wellness Assistant. Tell me about a minor ailment and I'll suggest some general remedies. Remember, I'm not a real doctor!",
+      background_color: '#0f1923',
+      accent_color: '#22d3a7',
+      text_color: '#e8faf5',
+      surface_color: '#1a2a38',
+      chip_color: '#0ea5e9',
+      font_family: 'DM Sans',
+      font_size: 14
+    };
+
+    function addMessage(content, isUser = false) {
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+
+      const bubble = document.createElement('div');
+      bubble.className = `max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed`;
+
+      const config = window.elementSdk?.config || defaultConfig;
+
+      if (isUser) {
+        bubble.style.background = config.accent_color || defaultConfig.accent_color;
+        bubble.style.color = '#fff';
+        bubble.style.borderBottomRightRadius = '6px';
+        wrapper.className += ' user-msg';
+      } else {
+        bubble.style.background = config.surface_color || defaultConfig.surface_color;
+        bubble.style.color = config.text_color || defaultConfig.text_color;
+        bubble.style.borderBottomLeftRadius = '6px';
+        wrapper.className += ' bot-msg';
+      }
+
+      bubble.innerHTML = content;
+      wrapper.appendChild(bubble);
+      chatArea.appendChild(wrapper);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function showTyping() {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bot-msg flex justify-start';
+      wrapper.id = 'typing-indicator';
+      const config = window.elementSdk?.config || defaultConfig;
+      wrapper.innerHTML = `<div class="rounded-2xl px-4 py-3 flex gap-1.5 items-center glow-effect" style="background:${config.surface_color || defaultConfig.surface_color};">
+        <span class="dot1 inline-block w-2 h-2 rounded-full" style="background:${config.accent_color || defaultConfig.accent_color};"></span>
+        <span class="dot2 inline-block w-2 h-2 rounded-full" style="background:${config.accent_color || defaultConfig.accent_color};"></span>
+        <span class="dot3 inline-block w-2 h-2 rounded-full" style="background:${config.accent_color || defaultConfig.accent_color};"></span>
+      </div>`;
+      chatArea.appendChild(wrapper);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    function generateResponse(text) {
+      const remedy = findRemedy(text);
+      if (remedy) {
+        let html = `<div class="mb-2 font-semibold flex items-center gap-2">${remedy.icon}<span class="bot-icon">${remedy.title}</span></div>`;
+        html += `<ul class="space-y-2 mb-3">`;
+        for (const tip of remedy.tips) {
+          html += `<li class="text-sm leading-relaxed shimmer-effect px-2 py-1 rounded" style="background:rgba(34,211,167,0.05);">${tip}</li>`;
+        }
+        html += `</ul>`;
+        html += `<div class="text-xs mt-2 px-3 py-2 rounded-lg glow-effect" style="background:rgba(234,179,8,0.1);color:#eab308;">⚠️ ${remedy.warning}</div>`;
+        return html;
+      }
+
+      // Check for greetings
+      const greetings = ['hi', 'hello', 'hey', 'good morning', 'good evening', 'good afternoon'];
+      if (greetings.some(g => text.toLowerCase().includes(g))) {
+        return "Hello! 😊 How are you feeling today? You can describe your symptoms, like <strong>headache</strong>, <strong>cold</strong>, <strong>fever</strong>, <strong>sore throat</strong>, etc., and I'll suggest some general remedies.";
+      }
+
+      return `I'm not sure about that specific condition. 🤔 I can help with common minor ailments like:<br><br>
+        • 🤕 Headaches & Migraines<br>
+        • 🤧 Cold, Flu & Allergies<br>
+        • 😷 Sore Throat & Cough<br>
+        • 🤢 Stomach Issues & Nausea<br>
+        • 💪 Body & Muscle Pain<br>
+        • 🌡️ Fever<br>
+        • 😴 Sleep Problems<br><br>
+        Try describing one of these symptoms!<br><br>
+        <span class="text-xs" style="color:#eab308;">For anything beyond minor ailments, please consult a qualified healthcare professional.</span>`;
+    }
+
+    function sendMessage(text) {
+      if (!text || !text.trim()) return;
+      userInput.value = '';
+      addMessage(text, true);
+
+      // Hide suggestions after first message
+      document.getElementById('suggestions').style.display = 'none';
+
+      showTyping();
+      const delay = 600 + Math.random() * 800;
+      setTimeout(() => {
+        removeTyping();
+        addMessage(generateResponse(text));
+      }, delay);
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendMessage(userInput.value.trim());
+    });
+
+    // --- Element SDK ---
+    function applyConfig(config) {
+      const app = document.getElementById('app');
+      app.style.background = config.background_color || defaultConfig.background_color;
+
+      document.getElementById('header-title').textContent = config.bot_name || defaultConfig.bot_name;
+
+      const font = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      document.body.style.fontFamily = `${font}, DM Sans, sans-serif`;
+      document.body.style.fontSize = `${baseSize}px`;
+      document.getElementById('header-title').style.fontFamily = `Playfair Display, ${font}, serif`;
+      document.getElementById('header-title').style.fontSize = `${baseSize * 1.15}px`;
+    }
+
+    // Show welcome message
+    function showWelcome() {
+      const config = window.elementSdk?.config || defaultConfig;
+      const msg = config.welcome_message || defaultConfig.welcome_message;
+      chatArea.innerHTML = '';
+      addMessage(msg);
+    }
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => {
+        applyConfig(config);
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+          { get: () => config.chip_color || defaultConfig.chip_color, set: (v) => { config.chip_color = v; window.elementSdk.setConfig({ chip_color: v }); } },
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } },
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['bot_name', config.bot_name || defaultConfig.bot_name],
+        ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+      ])
+    });
+
+    applyConfig(defaultConfig);
+    showWelcome();
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dcba97b038f60c2',t:'MTc3MzU3OTIxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
