@@ -1,0 +1,8 @@
+# GitHub Linguist language overrides
+*.jsx linguist-detectable=true
+*.jsx linguist-language=JavaScript
+*.js linguist-detectable=true
+*.js linguist-language=JavaScript
+*.html linguist-detectable=false
+frontend/index.html linguist-detectable=false
+package-lock.json linguist-generated=true
