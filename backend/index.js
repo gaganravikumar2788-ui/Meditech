@@ -392,6 +392,10 @@ app.post('/api/auth/verify-otp', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`MediTech API server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`MediTech API server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

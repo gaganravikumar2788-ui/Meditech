@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, 'meditech.db');
+const dbPath = process.env.VERCEL
+  ? '/tmp/meditech.db'
+  : path.join(__dirname, 'meditech.db');
 const db = new DatabaseSync(dbPath);
 
 db.exec('PRAGMA foreign_keys = ON;');
