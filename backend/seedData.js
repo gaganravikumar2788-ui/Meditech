@@ -96,4 +96,40 @@ export const HOSPITALS = [
       { name: 'Dr. Latha Reddy', specialty: 'Nutrition & Dietetics', experience: '8 years experience' },
     ],
   },
+  {
+    id: 'bangalore-jayanagar',
+    name: 'Bangalore Hospital Jayanagar',
+    location: 'Jayanagar, Bengaluru',
+    phone: '+91 83173 10513',
+    doctors: [
+      { name: 'Dr. Geetha. B. K', specialty: 'General Medicine', experience: 'Senior Specialist' },
+      { name: 'Dr. Seetha Lekshmi B', specialty: 'Obstetrics & Gynecology', experience: 'Senior Specialist' },
+      { name: 'Dr. Chinmay Nagesh', specialty: 'Neurosurgery & Neurology', experience: 'Senior Specialist' },
+      { name: 'Dr. Naresh Kumar K', specialty: 'Cardiology', experience: 'Senior Specialist' },
+    ],
+  },
+  {
+    id: 'bangalore-kengeri',
+    name: 'Bangalore Hospital Kengeri',
+    location: 'Kengeri, Bengaluru',
+    phone: '+91 96921 08108',
+    doctors: [
+      { name: 'Dr. Madhu S D', specialty: 'Orthopedics & Sports Medicine', experience: 'Senior Specialist' },
+      { name: 'Dr. Darshan C', specialty: 'General & Laparoscopic Surgery', experience: 'Senior Specialist' },
+      { name: 'Dr. Manoj A S', specialty: 'Nephrology & Urology', experience: 'Senior Specialist' },
+      { name: 'Dr. Shruthi A', specialty: 'Dermatology', experience: 'Senior Specialist' },
+    ],
+  },
+  {
+    id: 'carrollton-regional',
+    name: 'Carrollton Regional Medical Center',
+    location: 'Bangalore Hospitals Partner Network',
+    phone: '+91 83173 10513',
+    doctors: [
+      { name: 'Dr. Sanjana Yoganarasimha', specialty: 'Pediatrics', experience: 'Senior Specialist' },
+      { name: 'Dr. Sivacharan P V', specialty: 'Gastroenterology', experience: 'Senior Specialist' },
+      { name: 'Dr. Shreevatsa', specialty: 'Spine Surgery', experience: 'Senior Specialist' },
+      { name: 'Dr. Monesh K B', specialty: 'ICU & Critical Care', experience: 'Senior Specialist' },
+    ],
+  },
 ];
